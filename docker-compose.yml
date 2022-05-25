@@ -1,0 +1,37 @@
+version: '3.7'
+
+services:
+
+  shard:
+    image: tresdni/clouduo-servuo:latest
+    networks:
+      - clouduo
+    ports:
+      - "127.0.0.1:${SHARD_PORT}:${SHARD_PORT}"
+    volumes:
+      - ./client:/client
+      - ./shard:/shard
+    restart: "unless-stopped"
+    env_file:
+      - .env
+
+  code:
+    image: lscr.io/linuxserver/code-server:latest
+    container_name: code-server
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York
+      - PASSWORD=${OWNER_PASSWORD}
+      - SUDO_PASSWORD=${OWNER_PASSWORD}
+      #- PROXY_DOMAIN=code-server.my.domain
+      - DEFAULT_WORKSPACE=/config/workspace
+    volumes:
+      - ./shard:/config/workspace/shard
+    ports:
+      - 8443:8443
+    restart: unless-stopped
+
+networks:
+  clouduo:
+    external: true
